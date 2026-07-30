@@ -4,7 +4,9 @@ pipeline {
     environment {
         IMAGE_NAME = "devops-monit"
         CONTAINER_NAME = "devops-app"
+        DOCKERHUB_USERNAME = "likhith2"
     }
+    
 
     stages {
 
@@ -24,6 +26,15 @@ pipeline {
             }
         }
 
+        stage('Tag Docker Image') {
+           steps {
+               sh '''
+               docker tag ${IMAGE_NAME}:${BUILD_NUMBER} \
+               ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${BUILD_NUMBER}
+               '''
+            }
+        }
+
         stage('Stop Old Container') {
             steps {
                 sh 'docker rm -f ${CONTAINER_NAME} || true'
@@ -38,6 +49,25 @@ pipeline {
                 -p 5000:5000 \
                 ${IMAGE_NAME}:${BUILD_NUMBER}
                 '''
+            }
+        }
+
+        stage('Push Docker Image') {
+           steps {
+               withCredentials([usernamePassword(
+               credentialsId: 'dockerhub',
+               usernameVariable: 'DOCKER_USER',
+               passwordVariable: 'DOCKER_PASS'
+            )]) {
+
+                 sh '''
+                 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                 docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${BUILD_NUMBER}
+
+                 docker logout
+                 '''
+                }
             }
         }
 
