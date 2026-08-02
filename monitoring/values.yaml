@@ -1,0 +1,22 @@
+grafana:
+  enabled: true
+
+alertmanager:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 1d
+
+prometheusOperator:
+  admissionWebhooks:
+    enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
